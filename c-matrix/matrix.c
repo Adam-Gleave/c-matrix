@@ -1,7 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
+// Matrix x/y dimension
 #define DIMENSION 4
+
+// Return a random number between 0 and 10
+int random() {
+    return rand() % 10;
+}
 
 // Initialise a matrix, either random or zeroes
 int** init(int isRandom) {
@@ -12,12 +19,9 @@ int** init(int isRandom) {
         matrix[i] = (int*) malloc(DIMENSION * sizeof(int));
         int j;
         
-        for (j = 0; j < DIMENSION; j++) {
-            if (isRandom == 1) {
-                matrix[i][j] = rand();
-            }
-            else {
-                matrix[i][j] = 0;
+        if (isRandom == 1) {
+            for (j = 0; j < DIMENSION; j++) {
+                matrix[i][j] = random();
             }
         }
     }
@@ -53,7 +57,31 @@ void print_matrix(int** matrix) {
     printf("\n\n");
 }
 
+// Single-threaded O(n^3) multiplication algorithm
+void multiply_single(int** a, int** b, int** result) {
+    int i;
+
+    for (i = 0; i < DIMENSION; i++) {
+        int j;
+        int sum;
+
+        for (j = 0; j < DIMENSION; j++) {
+            int k;
+
+            for (k = 0; k < DIMENSION; k++) {
+                sum += a[i][k] * b[k][j];
+            }
+
+            result[i][j] = sum;
+            sum = 0;
+        }
+    }
+}
+
 int main() {
+    // Random number seed
+    srand(time(NULL));
+
     // Initialise matrices
     int** matrixA = init(1);
     int** matrixB = init(1);
@@ -62,6 +90,9 @@ int main() {
     // Debug and print values
     print_matrix(matrixA);
     print_matrix(matrixB);
+
+    // Single-thread multiply and print result
+    multiply_single(matrixA, matrixB, result_matrix);
     print_matrix(result_matrix);
 
     // Free matrix memory
