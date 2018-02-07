@@ -1,9 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
+#include <pthread.h>
 
 // Matrix x/y dimension
 #define DIMENSION 4
+// Number of threads to spawn
+#define NUM_THREADS 4
+
+// Structure to pass to threads
+struct matrices {
+    int[DIMENSION][DIMENSION] a;
+    int[DIMENSION][DIMENSION] b;
+    int[DIMENSION][DIMENSION] result;
+}
 
 // Return a random number between 0 and 10
 int random() {
@@ -19,9 +30,12 @@ int** init(int isRandom) {
         matrix[i] = (int*) malloc(DIMENSION * sizeof(int));
         int j;
         
-        if (isRandom == 1) {
-            for (j = 0; j < DIMENSION; j++) {
+        for (j = 0; j < DIMENSION; j++) {
+            if (isRandom == 1) {
                 matrix[i][j] = random();
+            }
+            else {
+                matrix[i][j] = 0;
             }
         }
     }
@@ -78,6 +92,11 @@ void multiply_single(int** a, int** b, int** result) {
     }
 }
 
+void multiply_multi(int** a, int** b, result_matrix) {
+    pthread_t* threads;
+    threads = malloc(NUM_THREADS * sizeof(pthread_t));
+}
+
 int main() {
     // Random number seed
     srand(time(NULL));
@@ -93,7 +112,15 @@ int main() {
 
     // Single-thread multiply and print result
     multiply_single(matrixA, matrixB, result_matrix);
+    printf("Single threaded multiplication\n");
+    printf("------------------------------\n");
     print_matrix(result_matrix);
+
+    // Multi-threaded multiply and print result
+    free_matrix(result_matrix);
+    result_matrix = init(0);
+    print_matrix(result_matrix);
+    multiply_multi(matrixA, matrixB, result_matrix)
 
     // Free matrix memory
     free_matrix(matrixA);
