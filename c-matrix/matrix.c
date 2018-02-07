@@ -10,19 +10,19 @@
 #define NUM_THREADS 4
 
 // Structure to pass to threads
-struct matrices {
-    int[DIMENSION][DIMENSION] a;
-    int[DIMENSION][DIMENSION] b;
-    int[DIMENSION][DIMENSION] result;
-}
+struct Matrices {
+    int a[DIMENSION][DIMENSION];
+    int b[DIMENSION][DIMENSION];    
+    int result[DIMENSION][DIMENSION];
+};
 
 // Return a random number between 0 and 10
-int random() {
+int random_num() {
     return rand() % 10;
 }
 
 // Initialise a matrix, either random or zeroes
-int** init(int isRandom) {
+int** init(int is_random) {
     int i;
     int** matrix = (int**) malloc(DIMENSION * sizeof(int));
 
@@ -31,8 +31,8 @@ int** init(int isRandom) {
         int j;
         
         for (j = 0; j < DIMENSION; j++) {
-            if (isRandom == 1) {
-                matrix[i][j] = random();
+            if (is_random == 1) {
+                matrix[i][j] = random_num();
             }
             else {
                 matrix[i][j] = 0;
@@ -41,17 +41,6 @@ int** init(int isRandom) {
     }
     
     return matrix;
-}
-
-// Free matrix memory
-void free_matrix(int** matrix) {
-    int i;
-
-    for (i = 0; i < DIMENSION; i++) {
-        free(matrix[i]);
-    }
-
-    free(matrix);
 }
 
 // Debug: Print matrix values
@@ -92,13 +81,14 @@ void multiply_single(int** a, int** b, int** result) {
     }
 }
 
-void multiply_multi(int** a, int** b, result_matrix) {
+// Multithreaded multiplication algorithm
+void multiply_multi(int** a, int** b, int** result) {
     pthread_t* threads;
     threads = malloc(NUM_THREADS * sizeof(pthread_t));
 }
 
 int main() {
-    // Random number seed
+    // random number seed
     srand(time(NULL));
 
     // Initialise matrices
@@ -117,15 +107,9 @@ int main() {
     print_matrix(result_matrix);
 
     // Multi-threaded multiply and print result
-    free_matrix(result_matrix);
     result_matrix = init(0);
     print_matrix(result_matrix);
-    multiply_multi(matrixA, matrixB, result_matrix)
-
-    // Free matrix memory
-    free_matrix(matrixA);
-    free_matrix(matrixB);
-    free_matrix(result_matrix);
+    multiply_multi(matrixA, matrixB, result_matrix);
 
     return 0;
 }
