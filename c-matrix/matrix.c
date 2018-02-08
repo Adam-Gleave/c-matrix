@@ -11,9 +11,10 @@
 
 // Structure to pass to threads
 struct Matrices {
-    int a[DIMENSION][DIMENSION];
-    int b[DIMENSION][DIMENSION];    
-    int result[DIMENSION][DIMENSION];
+	int id;
+    int** a;
+    int** b;    
+    int** result;
 };
 
 // Return a random number between 0 and 10
@@ -24,10 +25,10 @@ int random_num() {
 // Initialise a matrix, either random or zeroes
 int** init(int is_random) {
     int i;
-    int** matrix = (int**) malloc(DIMENSION * sizeof(int));
+    int** matrix = malloc(DIMENSION * sizeof(int));
 
     for (i = 0; i < DIMENSION; i++) {
-        matrix[i] = (int*) malloc(DIMENSION * sizeof(int));
+        matrix[i] = malloc(DIMENSION * sizeof(int));
         int j;
         
         for (j = 0; j < DIMENSION; j++) {
@@ -66,7 +67,7 @@ void multiply_single(int** a, int** b, int** result) {
 
     for (i = 0; i < DIMENSION; i++) {
         int j;
-        int sum;
+        int sum = 0;
 
         for (j = 0; j < DIMENSION; j++) {
             int k;
@@ -81,10 +82,44 @@ void multiply_single(int** a, int** b, int** result) {
     }
 }
 
+// Thread function 
+void* runner(void* args) {
+	struct Matrices* thread_data = (struct Matrices*) args;
+	int id = (*thread_data).id;
+	int i;
+	int sum = 0;
+
+	for (i = 0; i < DIMENSION; i++) {
+		int j;
+
+		for (j = 0; j < DIMENSION; j++) {
+			sum += (*thread_data).a[id][j] * (*thread_data).b[j][i];
+		}
+
+		(*thread_data).result[id][i] = sum;
+		sum = 0;
+	}
+}
+
 // Multithreaded multiplication algorithm
 void multiply_multi(int** a, int** b, int** result) {
     pthread_t* threads;
     threads = malloc(NUM_THREADS * sizeof(pthread_t));
+    struct Matrices thread_data[NUM_THREADS];
+    int i;
+
+    for (i = 0; i < NUM_THREADS; i++) {
+		thread_data[i].id = i;
+    	thread_data[i].a = a;
+    	thread_data[i].b = b;
+    	thread_data[i].result = result;
+
+    	pthread_create(&threads[i], NULL, runner, &thread_data[i]);
+    }
+
+    for (i = 0; i < NUM_THREADS; i++) {
+    	pthread_join(threads[i], NULL);
+    }
 }
 
 int main() {
@@ -108,8 +143,10 @@ int main() {
 
     // Multi-threaded multiply and print result
     result_matrix = init(0);
-    print_matrix(result_matrix);
     multiply_multi(matrixA, matrixB, result_matrix);
+    printf("\nMulti threaded multiplication\n");
+    printf("------------------------------\n");
+    print_matrix(result_matrix);
 
     return 0;
 }
